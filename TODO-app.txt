@@ -1,0 +1,18 @@
+ + Save bpm
+ + Save waveform
+ + Save drumkit
+ + Design
+   + Adjust text positions slightly
+   + on/off icons for audio channels
+   + CanOfBeats / PodSix splash
+   + try lighter background (same as interface tests)
+   + try lighter 'dark' widget colour
+   + try white rims on stuff
+ + Put labels on stuff where possible
+ + Rearrange graphics downwards
+ + about.html
+ + Init values for taplists and bpm etc. (so save of values works without having clicked anything)
+ + merge PdDroidParty fixes
+ + background graphic fixes
+ + Put savefiles up one level
+ + recording toggle fix
