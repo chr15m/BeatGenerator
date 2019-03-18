@@ -2,3 +2,4 @@ res/raw/patch.zip
 .gradle
 build
 patch/VERSION-*
+.*.swp
