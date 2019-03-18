@@ -1,15 +1,6 @@
 package cx.mccormick.canofbeats;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
-
 import android.graphics.Canvas;
-import android.graphics.RectF;
-import android.graphics.Paint;
-import android.view.MotionEvent;
-import android.util.Log;
 
 public class Comment extends Widget {
 	private static final String TAG = "Comment";
@@ -27,8 +18,8 @@ public class Comment extends Widget {
 		}
 		
 		label = buffer.toString();
-		labelpos[0] = Float.parseFloat(atomline[2]) / parent.patchwidth * screenwidth;
-		labelpos[1] = Float.parseFloat(atomline[3]) / parent.patchheight * screenheight + fontsize;
+		labelpos[0] = Float.parseFloat(atomline[2]) ;
+		labelpos[1] = Float.parseFloat(atomline[3]) ;
 	}
 	
 	public void draw(Canvas canvas) {

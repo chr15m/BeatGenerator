@@ -1,18 +1,9 @@
 package cx.mccormick.canofbeats;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
 import java.text.DecimalFormat;
 
 import android.graphics.Canvas;
-import android.graphics.RectF;
-import android.graphics.Paint;
-import android.graphics.Color;
 import android.graphics.Rect;
-import android.text.StaticLayout;
-import android.view.MotionEvent;
 import android.util.Log;
 
 public class Numberbox2 extends Numberbox {
@@ -21,8 +12,8 @@ public class Numberbox2 extends Numberbox {
 	public Numberbox2(PdDroidPatchView app, String[] atomline) {
 		super(app);
 		
-		float x = Float.parseFloat(atomline[2]) / parent.patchwidth * screenwidth;
-		float y = Float.parseFloat(atomline[3]) / parent.patchheight * screenheight;
+		float x = Float.parseFloat(atomline[2]) ;
+		float y = Float.parseFloat(atomline[3]) ;
 		Rect tRect = new Rect();
 		
 		// calculate screen bounds for the numbers that can fit
@@ -39,13 +30,13 @@ public class Numberbox2 extends Numberbox {
 		paint.getTextBounds(">" + calclen.toString(), 0, calclen.length() + 1, tRect);
 		dRect.set(tRect);
 		dRect.sort();
-		dRect.offset((int)x, (int)y + fontsize);
+		dRect.offset((int)x, (int)y);
 		dRect.top -= 3;
 		dRect.bottom += 3;
 		dRect.left -= 3;
 		dRect.right += 3;
-		
-		float h = Float.parseFloat(atomline[6]) / parent.patchheight * screenheight;
+
+		float h = Float.parseFloat(atomline[6]) ;
 		float diff = h - dRect.height();
 		if (diff > 0) {
 			dRect.bottom += diff / 2;
@@ -55,11 +46,11 @@ public class Numberbox2 extends Numberbox {
 		min = Float.parseFloat(atomline[7]);
 		max = Float.parseFloat(atomline[8]);
 		init = Integer.parseInt(atomline[10]);
-		sendname = atomline[11];
+		sendname = app.app.replaceDollarZero(atomline[11]);
 		receivename = atomline[12];
 		label = setLabel(atomline[13]);
-		labelpos[0] = Float.parseFloat(atomline[14]) / parent.patchwidth * screenwidth;
-		labelpos[1] = Float.parseFloat(atomline[15]) / parent.patchheight * screenheight;
+		labelpos[0] = Float.parseFloat(atomline[14]) ;
+		labelpos[1] = Float.parseFloat(atomline[15]) ;
 		
 		// set the value to the init value if possible
 		setval(Float.parseFloat(atomline[21]), 0);
@@ -77,7 +68,7 @@ public class Numberbox2 extends Numberbox {
 		canvas.drawLine(dRect.left, dRect.top + 1, dRect.left, dRect.bottom, paint);
 		canvas.drawLine(dRect.right, dRect.top + 5, dRect.right, dRect.bottom, paint);
 		canvas.drawLine(dRect.right - 5, dRect.top, dRect.right, dRect.top + 5, paint);
-		canvas.drawText(">" + fmt.format(val), dRect.left + 3, dRect.bottom / 2 + fontsize / 2 + 3, paint);
+		canvas.drawText(">" + fmt.format(val), dRect.left + 3, dRect.centerY() + dRect.height() * (float)0.25, paint);
 	}
 }
 

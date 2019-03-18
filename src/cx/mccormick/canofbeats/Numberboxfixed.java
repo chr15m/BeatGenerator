@@ -3,28 +3,22 @@ package cx.mccormick.canofbeats;
 import java.text.DecimalFormat;
 
 import android.graphics.Canvas;
-import android.graphics.RectF;
 import android.graphics.Paint;
-import android.graphics.Color;
-import android.graphics.Rect;
-import android.graphics.Picture;
-import android.text.StaticLayout;
-import android.view.MotionEvent;
-import android.util.Log;
+import android.graphics.RectF;
 
 public class Numberboxfixed extends Numberbox {
 	private static final String TAG = "Numberbox";
 	
-	SVGRenderer on = null;
-	SVGRenderer off = null;
+	WImage on = new WImage();
+	WImage off = new WImage();
 	
 	public Numberboxfixed(PdDroidPatchView app, String[] atomline) {
 		super(app);
 		
-		float x = Float.parseFloat(atomline[2]) / parent.patchwidth * screenwidth;
-		float y = Float.parseFloat(atomline[3]) / parent.patchheight * screenheight;
-		float w = Float.parseFloat(atomline[5]) / parent.patchwidth * screenwidth;
-		float h = Float.parseFloat(atomline[6]) / parent.patchheight * screenheight;
+		float x = Float.parseFloat(atomline[2]) ;
+		float y = Float.parseFloat(atomline[3]) ;
+		float w = Float.parseFloat(atomline[5]) ;
+		float h = Float.parseFloat(atomline[6]) ;
 		
 		fontsize = (int)(h * 0.75);
 		
@@ -46,7 +40,7 @@ public class Numberboxfixed extends Numberbox {
 		min = Float.parseFloat(atomline[9]);
 		max = Float.parseFloat(atomline[10]);
 		init = 1;
-		sendname = atomline[8];
+		sendname = app.app.replaceDollarZero(atomline[8]);
 		receivename = atomline[7];
 		
 		// set the value to the init value if possible
@@ -60,12 +54,12 @@ public class Numberboxfixed extends Numberbox {
 		
 		dRect = new RectF(Math.round(x), Math.round(y), Math.round(x + w), Math.round(y + h));
 		
-		// try and load SVGs
-		on = getSVG(TAG, "on", sendname, receivename);
-		off = getSVG(TAG, "off", sendname, receivename);
+		// try and load images
+		on.load(TAG, "on", label, sendname, receivename);
+		off.load(TAG, "off", label, sendname, receivename);
 		
-		setTextParametersFromSVG(on);
-		setTextParametersFromSVG(off);
+		setTextParametersFromSVG(on.svg);
+		setTextParametersFromSVG(off.svg);
 	}
 	
 	public void draw(Canvas canvas) {
@@ -75,13 +69,13 @@ public class Numberboxfixed extends Numberbox {
 			paint.setStrokeWidth(1);
 		}
 		
-		if (down ? drawPicture(canvas, on) : drawPicture(canvas, off)) {
+		if (down ? on.draw(canvas) : off.draw(canvas)) {
 			canvas.drawLine(dRect.left + 1, dRect.top, dRect.right - 1, dRect.top, paint);
 			canvas.drawLine(dRect.left + 1, dRect.bottom, dRect.right - 1, dRect.bottom, paint);
 			canvas.drawLine(dRect.left, dRect.top + 1, dRect.left, dRect.bottom - 1, paint);
 			canvas.drawLine(dRect.right, dRect.top, dRect.right, dRect.bottom, paint);
 		}
-		canvas.drawText(fmt.format(val), dRect.left + dRect.width() / 2, (int)(dRect.top + dRect.height() * 0.75), paint);
+		drawCenteredText(canvas, fmt.format(val));
 	}
 }
 

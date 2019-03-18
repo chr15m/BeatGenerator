@@ -1,15 +1,9 @@
 package cx.mccormick.canofbeats;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
-
 import android.graphics.Canvas;
-import android.graphics.RectF;
+import android.graphics.Color;
 import android.graphics.Paint;
-import android.view.MotionEvent;
-import android.util.Log;
+import android.graphics.RectF;
 
 public class Slider extends Widget {
 	private static final String TAG = "Slider";
@@ -17,11 +11,15 @@ public class Slider extends Widget {
 	float min, max;
 	int log;
 	
+	int pid0=-1;			// pointer id,
+	float x0,y0,val0 ; 	// position of pointer, and value when pointer down.
+	
 	boolean orientation_horizontal = true;
 	boolean down = false;
+	int steady = 1;
 	
-	SVGRenderer svg = null;
-	SVGRenderer slider = null;
+	WImage bg = new WImage();
+	WImage slider = new WImage();
 	
 	RectF sRect = new RectF();
 	
@@ -30,98 +28,100 @@ public class Slider extends Widget {
 		
 		orientation_horizontal = horizontal;
 		
-		float x = Float.parseFloat(atomline[2]) / parent.patchwidth * screenwidth;
-		float y = Float.parseFloat(atomline[3]) / parent.patchheight * screenheight;
-		float w = Float.parseFloat(atomline[5]) / parent.patchwidth * screenwidth;
-		float h = Float.parseFloat(atomline[6]) / parent.patchheight * screenheight;
+		float x = Float.parseFloat(atomline[2]) ;
+		float y = Float.parseFloat(atomline[3]) ;
+		float w = Float.parseFloat(atomline[5]) ;
+		float h = Float.parseFloat(atomline[6]) ;
 		
 		min = Float.parseFloat(atomline[7]);
 		max = Float.parseFloat(atomline[8]);
 		log = Integer.parseInt(atomline[9]);
 		init = Integer.parseInt(atomline[10]);
-		sendname = atomline[11];
+		sendname = app.app.replaceDollarZero(atomline[11]);
 		receivename = atomline[12];
 		label = setLabel(atomline[13]);
-		labelpos[0] = Float.parseFloat(atomline[14]) / parent.patchwidth * screenwidth;
-		labelpos[1] = Float.parseFloat(atomline[15]) / parent.patchheight * screenheight;
-		
+		labelpos[0] = Float.parseFloat(atomline[14]) ;
+		labelpos[1] = Float.parseFloat(atomline[15]) ;
+		labelfont = Integer.parseInt(atomline[16]);
+		labelsize = (int)(Float.parseFloat(atomline[17]));
+		bgcolor = getColor(Integer.parseInt(atomline[18]));
+		fgcolor = getColor(Integer.parseInt(atomline[19]));
+		labelcolor = getColor(Integer.parseInt(atomline[20]));
+		steady = Integer.parseInt(atomline[22]);
+
 		setval((float)(Float.parseFloat(atomline[21]) * 0.01 * (max - min) / ((horizontal ? Float.parseFloat(atomline[5]) : Float.parseFloat(atomline[6])) - 1) + min), min);
 		
 		// listen out for floats from Pd
 		setupreceive();
 		
 		// send initial value if we have one
-		initval();
+		//initval();
 		
 		// graphics setup
 		dRect = new RectF(Math.round(x), Math.round(y), Math.round(x + w), Math.round(y + h));
 		
-		// load up the SVG to use and cache all positions
+		// load up the images to use and cache all positions
 		if (horizontal) {
-			svg = getSVG(TAG, "horizontal", label, sendname);
-			slider = getSVG(TAG, "widget-horizontal", label, sendname);
-			/*for (float sx = dRect.left; sx < dRect.left + dRect.width(); sx++) {
-				// hit the cache for this value
-				svg.interpolate("closed", "open", (sx - min) / (max - min));
-			}*/
+			bg.load(TAG, "horizontal", label, sendname);
+			slider.load(TAG, "widget-horizontal", label, sendname);
 		} else {
-			svg = getSVG(TAG, "vertical", label, sendname);
-			slider = getSVG(TAG, "widget-vertical", label, sendname);
-			/*for (float sy = dRect.top; sy < dRect.top + dRect.height(); sy++) {
-				// hit the cache for this value
-				svg.interpolate("closed", "open", (sy - min) / (max - min));
-			}*/
+			bg.load(TAG, "vertical", label, sendname);
+			slider.load(TAG, "widget-vertical", label, sendname);
 		}
 		
-		if (svg != null && slider != null) {
+		if ( (!bg.none()) && (!slider.none()) ) {
 			// create the slider rectangle thingy
 			if (orientation_horizontal) {
-				float ratio = Float.parseFloat(slider.getAttribute("height")) / h;
-				int rel = (int)(Float.parseFloat(slider.getAttribute("width")) / ratio);
+				float ratio = slider.getHeight() / h;
+				int rel = (int)(slider.getWidth() / ratio);
 				sRect = new RectF(x, y, x + rel, y + h);
 			} else {
-				float ratio = Float.parseFloat(slider.getAttribute("width")) / w;
-				int rel = (int)(Float.parseFloat(slider.getAttribute("height")) / ratio);
+				float ratio = slider.getHeight() / w;
+				int rel = (int)(slider.getHeight() / ratio);
 				sRect = new RectF(x, y, x + w, y + rel);
 			}
 		}
 		
-		slider_setval(val);
-		
-		// interpolate the svg paths with ID "open" and "closed"
-		//if (svg != null) {
-		//	svg.interpolate("closed", "open", 0.5);
-		//}
+		setval(val);
 	}
 	
 	public void draw(Canvas canvas) {
-		if (drawPicture(canvas, svg)) {
-			canvas.drawLine(dRect.left + 1, dRect.top, dRect.right, dRect.top, paint);
-			canvas.drawLine(dRect.left + 1, dRect.bottom, dRect.right, dRect.bottom, paint);
-			canvas.drawLine(dRect.left, dRect.top + 1, dRect.left, dRect.bottom, paint);
-			canvas.drawLine(dRect.right, dRect.top + 1, dRect.right, dRect.bottom, paint);
+		if (bg.draw(canvas)) {
+			paint.setColor(bgcolor);
+			paint.setStyle(Paint.Style.FILL);
+			canvas.drawRect(dRect,paint);
+
+			paint.setColor(Color.BLACK);
+			paint.setStrokeWidth(1);
+			canvas.drawLine(dRect.left /*+ 1*/, dRect.top, dRect.right, dRect.top, paint);
+			canvas.drawLine(dRect.left /*+ 1*/, dRect.bottom, dRect.right, dRect.bottom, paint);
+			canvas.drawLine(dRect.left, dRect.top /*+ 1*/, dRect.left, dRect.bottom, paint);
+			canvas.drawLine(dRect.right, dRect.top /*+ 1*/, dRect.right, dRect.bottom, paint);
+			paint.setColor(fgcolor);
+			paint.setStrokeWidth(3);
 			if (orientation_horizontal) {
-				canvas.drawLine(Math.round(dRect.left + ((val - min) / (max - min)) * dRect.width()), Math.round(dRect.top + 2), Math.round(dRect.left + ((val - min) / (max - min)) * dRect.width()), Math.round(dRect.bottom - 2), paint);
+				canvas.drawLine(Math.round(dRect.left + ((val - min) / (max - min)) * dRect.width()), Math.round(dRect.top /*+ 2*/), Math.round(dRect.left + ((val - min) / (max - min)) * dRect.width()), Math.round(dRect.bottom /*- 2*/), paint);
 			} else {
-				canvas.drawLine(Math.round(dRect.left + 2), Math.round(dRect.bottom - ((val - min) / (max - min)) * dRect.height()), Math.round(dRect.right - 2), Math.round(dRect.bottom - ((val - min) / (max - min)) * dRect.height()), paint);
+				canvas.drawLine(Math.round(dRect.left /*+ 2*/), Math.round(dRect.bottom - ((val - min) / (max - min)) * dRect.height()), Math.round(dRect.right /*- 2*/), Math.round(dRect.bottom - ((val - min) / (max - min)) * dRect.height()), paint);
 			}
-			drawLabel(canvas);
-		} else if (slider != null) {
+
+		} else if (!slider.none()) {
 			if (orientation_horizontal) {
 				sRect.offsetTo((val - min) / (max - min) * (dRect.width() - sRect.width()) + dRect.left, dRect.top);
 			} else {
 				sRect.offsetTo(dRect.left, (1 - (val - min) / (max - min)) * (dRect.height() - sRect.height()) + dRect.top);
 			}
-			drawPicture(canvas, slider, sRect);
+			slider.draw(canvas,sRect);
 		}
+		drawLabel(canvas);
 	}
-	
-	public void slider_setval(float v) {
+
+	public void setval(float v) {
 		val = Math.min(max, Math.max(min, v));
-		if (svg != null) {
+		if (bg.svg != null) {
 			// Log.e("Slider", "" + ((val - min) / (max - min)));
-			if (slider == null) {
-				svg.interpolate("closed", "open", (val - min) / (max - min));
+			if (slider.none()) {
+				bg.svg.interpolate("closed", "open", (val - min) / (max - min));
 			}
 		}
 	}
@@ -134,33 +134,51 @@ public class Slider extends Widget {
 		return (((dRect.height() - (y - dRect.top)) / dRect.height()) * (max - min) + min);
 	}
 	
-	public void touch(MotionEvent event) {
-		float ex = event.getX();
-		float ey = event.getY();
-		if (event.getAction() == event.ACTION_DOWN && dRect.contains(ex, ey)) {
-			down = true;
-		}
-		
-		if (down) {
-			//Log.e(TAG, "touch:" + val);
-			if (event.getAction() == event.ACTION_DOWN || event.getAction() == event.ACTION_MOVE) {
-				// calculate the new value based on touch
-				if (orientation_horizontal) {
-					val = get_horizontal_val(ex);
-				} else {
-					val = get_vertical_val(ey);
-				}
-				// clamp the value
-				slider_setval(val);
-				// send the result to Pd
-				send("" + val);
-			} else if (event.getAction() == event.ACTION_UP) {
-				down = false;
+	public boolean touchdown(int pid,float x,float y)
+	{
+		if (dRect.contains(x, y)) {
+			val0=val;
+			x0=x;
+			y0=y;
+			pid0=pid;
+			if(steady==0) {
+				if (orientation_horizontal) val = get_horizontal_val(x);
+				else val = get_vertical_val(y);
 			}
+			send("" + val);
+			return true;
 		}
+		return false;
+	}
+
+	public boolean touchup(int pid,float x,float y)
+	{
+		if(pid0 == pid) {
+			pid0 = -1;
+			//return true;
+		}
+		return false;
+	}
+
+	public boolean touchmove(int pid,float x,float y)
+	{
+		if(pid0 == pid) {
+			if (orientation_horizontal) {
+				val = steady * val0 + get_horizontal_val(x) - get_horizontal_val(x0) * steady;
+			} else {
+				val = steady * val0 + get_vertical_val(y) - get_vertical_val(y0) * steady;
+			}
+			// clamp the value
+			setval(val);
+			// send the result to Pd
+			send("" + val);
+			return true;
+		}
+		return false;
 	}
 	
 	public void receiveMessage(String symbol, Object... args) {
+		if(widgetreceiveSymbol(symbol,args)) return;
 		if (args.length > 0 && args[0].getClass().equals(Float.class)) {
 			receiveFloat((Float)args[0]);
 		}
@@ -173,7 +191,7 @@ public class Slider extends Widget {
 	}
 	
 	public void receiveFloat(float v) {
-		slider_setval(v);
+		setval(v);
 	}
 }
 

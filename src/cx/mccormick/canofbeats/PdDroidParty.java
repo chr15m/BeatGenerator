@@ -1,71 +1,90 @@
 package cx.mccormick.canofbeats;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Collection;
-import java.io.File;
-import java.io.InputStreamReader;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.puredata.android.io.AudioParameters;
+import org.puredata.android.midi.MidiToPdAdapter;
+import org.puredata.android.midi.PdToMidiAdapter;
 import org.puredata.android.service.PdService;
 import org.puredata.core.PdBase;
-import org.puredata.core.PdReceiver;
 import org.puredata.core.utils.PdDispatcher;
-import org.puredata.core.utils.IoUtils;
 
-import android.app.ProgressDialog;
 import android.app.Activity;
-import android.app.Dialog;
 import android.app.AlertDialog;
-import android.text.Html;
+import android.app.ProgressDialog;
 import android.content.ComponentName;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.content.res.AssetManager;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbManager;
+import android.net.wifi.WifiManager;
+import android.net.wifi.WifiManager.MulticastLock;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.widget.Toast;
-import android.widget.TextView;
-import android.util.Log;
-import android.view.MotionEvent;
-import android.view.Window;
-import android.view.WindowManager;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.text.Spanned;
-import android.text.util.Linkify;
+import android.text.Html;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
+import android.text.util.Linkify;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.TextView;
+import android.widget.Toast;
 
-import cx.mccormick.canofbeats.PdParser;
+import com.noisepages.nettoyeur.midi.MidiReceiver;
+import com.noisepages.nettoyeur.usb.ConnectionFailedException;
+import com.noisepages.nettoyeur.usb.DeviceNotConnectedException;
+import com.noisepages.nettoyeur.usb.InterfaceNotAvailableException;
+import com.noisepages.nettoyeur.usb.UsbBroadcastHandler;
+import com.noisepages.nettoyeur.usb.midi.UsbMidiDevice;
+import com.noisepages.nettoyeur.usb.midi.UsbMidiDevice.UsbMidiInput;
+import com.noisepages.nettoyeur.usb.midi.UsbMidiDevice.UsbMidiOutput;
+import com.noisepages.nettoyeur.usb.midi.util.UsbMidiInputSelector;
+import com.noisepages.nettoyeur.usb.midi.util.UsbMidiOutputSelector;
+import com.noisepages.nettoyeur.usb.util.AsyncDeviceInfoLookup;
 
 public class PdDroidParty extends Activity {
 	public PdDroidPatchView patchview = null;
 	public static final String PATCH = "PATCH";
 	private static final String PD_CLIENT = "PdDroidParty";
 	private static final String TAG = "PdDroidParty";
-	private static final int SAMPLE_RATE = 22050;
+	private static final int SAMPLE_RATE = 44100;
 	public static final int DIALOG_NUMBERBOX = 1;
 	public static final int DIALOG_SAVE = 2;
 	public static final int DIALOG_LOAD = 3;
+	public int dollarzero = -1;
 	
 	private String path;
 	private PdService pdService = null;
-	private int patch = -1;
 	private final Object lock = new Object();
 	public Menu ourmenu = null;
 	Map<String, DroidPartyReceiver> receivemap = new HashMap<String, DroidPartyReceiver>();
 	ArrayList<String[]> atomlines = null;
 	Widget widgetpopped = null;
+	MulticastLock wifiMulticastLock = null;
 	
 	private MenuItem menuabout = null;
 	private MenuItem menuexit = null;
+	private MenuItem menumidi = null;
+
+	private UsbMidiDevice midiDevice = null;
+	private MidiToPdAdapter receiver = new MidiToPdAdapter();
+	private PdToMidiAdapter sender;
+	private UsbMidiOutputSelector outputSelector = null;
 	
 	private final PdDispatcher dispatcher = new PdDispatcher() {
 		@Override
@@ -144,6 +163,15 @@ public class PdDroidParty extends Activity {
 		// add the menu bang menu items
 		MenuBang.setMenu(menu);
 		// TODO: preferences = ic_menu_preferences
+		// midi menu
+		// test for platforms that don't support USB OTG devices
+		try {
+			UsbManager manager = (UsbManager) getSystemService(Context.USB_SERVICE);
+			menumidi = menu.add(0, Menu.FIRST + menu.size(), 0, "Midi");
+			menumidi.setIcon(android.R.drawable.ic_menu_manage); 
+		} catch(NoClassDefFoundError e) {
+			// don't care
+		}
 		// exit menu item
 		menuexit = menu.add(0, Menu.FIRST + menu.size(), 0, "Exit");
 		menuexit.setIcon(android.R.drawable.ic_menu_close_clear_cancel); 
@@ -183,11 +211,43 @@ public class PdDroidParty extends Activity {
 			((TextView)ab.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
 		} else if (item == menuexit) {
 			finish();
+		} else if (menumidi != null && item == menumidi) {
+			if (midiDevice == null) {
+				chooseMidiDevice();
+			} else {
+				midiDevice.close();
+				midiDevice = null;
+				post("USB MIDI connection closed");
+			}
 		} else {
 			// pass the menu selection through to the MenuBang manager
 			MenuBang.hit(item);
 		}
 		return super.onOptionsItemSelected(item);
+	}
+	
+	// confirm quit :
+	@Override
+	public void onBackPressed() {
+	    String basename;
+	    
+	    basename = path.substring(0,path.lastIndexOf("/"));
+	    basename = basename.substring(basename.lastIndexOf("/")+1,basename.length());
+	    
+		new AlertDialog.Builder(this)
+	        .setIcon(android.R.drawable.ic_dialog_alert)
+	        .setTitle("Confirm Close")
+	        .setMessage("Are you sure you want to close " + basename + " ?")
+	        .setPositiveButton("Yes", new DialogInterface.OnClickListener()
+	    {
+	        @Override
+	        public void onClick(DialogInterface dialog, int which) {
+	            finish();    
+	        }
+
+	    })
+	    .setNegativeButton("No", null)
+	    .show();
 	}
 	
 	// send a Pd atom-string 's' to a particular receiver 'dest'
@@ -207,12 +267,19 @@ public class PdDroidParty extends Activity {
 		PdBase.sendList(dest, ol);
 	}
 	
+	public String replaceDollarZero(String name) {
+		return name.replace("\\$0", dollarzero + "").replace("$0", dollarzero + "");
+	}
+	
 	public void registerReceiver(String name, Widget w) {
-		DroidPartyReceiver r = receivemap.get(name);
+		// do $0 replacement
+		String realname = replaceDollarZero(name);
+		Log.e(TAG, "Receiver: " + realname);
+		DroidPartyReceiver r = receivemap.get(realname);
 		if (r == null) {
 			r = new DroidPartyReceiver(patchview, w);
-			receivemap.put(name, r);
-			dispatcher.addListener(name, r.listener);
+			receivemap.put(realname, r);
+			dispatcher.addListener(realname, r.listener);
 		} else {
 			r.addWidget(w);
 		}
@@ -221,7 +288,10 @@ public class PdDroidParty extends Activity {
 	// initialise the GUI with the OpenGL rendering engine
 	private void initGui() {
 		//setContentView(R.layout.main);
-		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		int flags = WindowManager.LayoutParams.FLAG_FULLSCREEN |
+			WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+			WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON; 		
+		getWindow().setFlags(flags, flags);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		patchview = new PdDroidPatchView(this, this);
 		setContentView(patchview);
@@ -231,6 +301,106 @@ public class PdDroidParty extends Activity {
 	
 	// initialise Pd asking for the desired sample rate, parameters, etc.
 	private void initPd() {
+		Context context = this.getApplicationContext();
+		// make sure netreceive can receive broadcast UDP packets
+		wifiMulticastLock = ((WifiManager) context.getSystemService(Context.WIFI_SERVICE)).createMulticastLock("PdDroidPartyMulticastLock");
+		Log.e(TAG, "Got Multicast Lock (before)? " + wifiMulticastLock.isHeld());
+		wifiMulticastLock.acquire();
+		Log.e(TAG, "Got Multicast Lock (after)? " + wifiMulticastLock.isHeld());
+		// set up the midi stuff
+		UsbMidiDevice.installBroadcastHandler(this, new UsbBroadcastHandler() {
+			@Override
+			public void onPermissionGranted(UsbDevice device) {
+				if (midiDevice == null || !midiDevice.matches(device)) return;
+				try {
+					midiDevice.open(PdDroidParty.this);
+				} catch (ConnectionFailedException e) {
+					post("USB connection failed");
+					midiDevice = null;
+					return;
+				}
+				
+				/*if (midiDevice.getInterfaces().size() == 1 && midiDevice.getInterfaces().get(0).getOutputs().size() == 1) {
+					try {
+						sender = new PdToMidiAdapter(midiDevice.getInterfaces().get(0).getOutputs().get(0).getMidiOut());
+						PdBase.setMidiReceiver(sender);
+					} catch (DeviceNotConnectedException e) {
+						post("MIDI device has been disconnected");
+					} catch (InterfaceNotAvailableException e) {
+						post("MIDI interface is unavailable");
+					}
+				} else {*/
+					outputSelector = new UsbMidiOutputSelector(midiDevice) {
+						@Override
+						protected void onOutputSelected(UsbMidiOutput output, UsbMidiDevice device, int iface, int index) {
+							post("Output selection: Interface " + iface + ", Output " + index);
+							try {
+								sender = new PdToMidiAdapter(output.getMidiOut());
+								PdBase.setMidiReceiver(sender);
+							} catch (DeviceNotConnectedException e) {
+								post("MIDI device has been disconnected");
+							} catch (InterfaceNotAvailableException e) {
+								post("MIDI interface is unavailable");
+							}
+						}
+
+						@Override
+						protected void onNoSelection(UsbMidiDevice device) {
+							post("No output selected");
+						}
+					};
+				//}
+
+				/*if (midiDevice.getInterfaces().size() == 1 && midiDevice.getInterfaces().get(0).getInputs().size() == 1) {
+					midiDevice.getInterfaces().get(0).getInputs().get(0).setReceiver(receiver);
+				} else {*/
+					new UsbMidiInputSelector(midiDevice) {
+						@Override
+						protected void onInputSelected(UsbMidiInput input, UsbMidiDevice device, int iface,
+								int index) {
+							post("Input selection: Interface " + iface + ", Input " + index);
+							input.setReceiver(receiver);
+							try {
+								input.start();
+							} catch (DeviceNotConnectedException e) {
+								post("MIDI device has been disconnected");
+								return;
+							} catch (InterfaceNotAvailableException e) {
+								post("MIDI interface is unavailable");
+								return;
+							}
+							if (outputSelector != null) {
+								outputSelector.show(getFragmentManager(), null);
+							}
+						}
+
+						@Override
+						protected void onNoSelection(UsbMidiDevice device) {
+							post("No input selected");
+							if (outputSelector != null) {
+								outputSelector.show(getFragmentManager(), null);
+							}
+						}
+					}.show(getFragmentManager(), null);
+				//}
+			}
+
+			@Override
+			public void onPermissionDenied(UsbDevice device) {
+				if (midiDevice == null || !midiDevice.matches(device)) return;
+				post("Permission denied for device " + midiDevice.getCurrentDeviceInfo());
+				midiDevice = null;
+			}
+
+			@Override
+			public void onDeviceDetached(UsbDevice device) {
+				if (midiDevice == null || !midiDevice.matches(device)) return;
+				midiDevice.close();
+				midiDevice = null;
+				post("MIDI device disconnected");
+			}
+		});
+		// set a progress dialog running
 		final ProgressDialog progress = new ProgressDialog(this);
 		progress.setMessage("Loading...");
 		progress.setCancelable(false);
@@ -270,7 +440,7 @@ public class PdDroidParty extends Activity {
 					PdParser p = new PdParser();
 					// p.printAtoms(p.parsePatch(path));
 					// get the actual lines of atoms from the patch
-					atomlines = p.parsePatch(path);
+					atomlines = PdParser.parsePatch(path);
 					// some devices don't have a mic and might be buggy
 					// so don't create the audio in unless we really need it
 					// TODO: check a config option for this
@@ -284,7 +454,7 @@ public class PdDroidParty extends Activity {
 						Log.e(TAG, e.toString());
 						finish();
 					}
-					patch = PdBase.openPatch(path.toString());
+					dollarzero = PdBase.openPatch(path.toString());
 					patchview.buildUI(p, atomlines);
 					// start the audio thread
 					String name = res.getString(R.string.app_name);
@@ -327,12 +497,14 @@ public class PdDroidParty extends Activity {
 	
 	// quit the Pd service and release other resources
 	private void cleanup() {
+		// let the screen blank again
+		getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		// make sure to release all resources
 		if (pdService != null) {
 			pdService.stopAudio();
 		}
-		if (patch != -1) {
-			PdBase.closePatch(patch);
+		if (dollarzero != -1) {
+			PdBase.closePatch(dollarzero);
 		}
 		PdBase.sendMessage("pd", "quit", "bang");
 		PdBase.release();
@@ -342,6 +514,14 @@ public class PdDroidParty extends Activity {
 			// already unbound
 			pdService = null;
 		}
+		// release midi
+		if (midiDevice != null) {
+			midiDevice.close();
+		}
+		UsbMidiDevice.uninstallBroadcastHandler(this);
+		// release the lock on wifi multicasting
+		if (wifiMulticastLock != null && wifiMulticastLock.isHeld())
+			wifiMulticastLock.release();
 	}
 	
 	public void launchDialog(Widget which, int type) {
@@ -374,6 +554,33 @@ public class PdDroidParty extends Activity {
 		} else {
 			return dir;
 		}
+	}
+	
+	private void chooseMidiDevice() {
+		// set a progress dialog running
+		final ProgressDialog progress = new ProgressDialog(this);
+		progress.setMessage("Waiting for USB midi");
+		progress.setCancelable(false);
+		progress.setIndeterminate(true);
+		progress.show();
+		final List<UsbMidiDevice> devices = UsbMidiDevice.getMidiDevices(this);
+		new AsyncDeviceInfoLookup() {
+			@Override
+			protected void onLookupComplete() {
+				// ok we are done
+				progress.dismiss();
+				if (!devices.isEmpty()) {
+					// loop through all devices and add them
+					for (int i = 0; i < devices.size(); ++i) {
+						midiDevice = devices.get(i);
+						midiDevice.requestPermission(PdDroidParty.this);
+					}
+					post("Added all midi devices.");
+				} else {
+					post("No midi devices found.");
+				}
+			}
+		}.execute(devices.toArray(new UsbMidiDevice[devices.size()]));
 	}
 	
 	@Override

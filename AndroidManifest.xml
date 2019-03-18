@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="cx.mccormick.canofbeats" android:versionCode="153" android:versionName="2.0">
+	package="cx.mccormick.canofbeats" android:versionCode="154" android:versionName="0.3.0">
         <supports-screens
             android:largeScreens="true"
             android:normalScreens="true"
@@ -23,8 +23,15 @@
 		<activity android:name=".LoadDialog" android:theme="@android:style/Theme.Dialog" android:configChanges="orientation" android:label="Load"></activity>
 		<service android:name="org.puredata.android.service.PdService" />
 	</application>
-	<uses-sdk android:minSdkVersion="4" android:targetSdkVersion="7"/>
+	<uses-sdk android:minSdkVersion="17" android:targetSdkVersion="11"/>
 	<uses-permission android:name="android.permission.RECORD_AUDIO" />
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 	<uses-permission android:name="android.permission.INTERNET" />
+	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+	<uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+	<uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+	<uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+	<uses-permission android:name="android.permission.CHANGE_NETWORK_MULTICAST_STATE" />
+	<uses-permission android:name="android.permission.VIBRATE" />
+	<uses-permission android:name="android.permission.BIND_MIDI_DEVICE_SERVICE" />
 </manifest>

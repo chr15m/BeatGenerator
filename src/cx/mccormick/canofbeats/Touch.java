@@ -1,41 +1,33 @@
 package cx.mccormick.canofbeats;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
-
 import android.graphics.Canvas;
 import android.graphics.RectF;
-import android.graphics.Paint;
-import android.graphics.Picture;
-import android.view.MotionEvent;
-import android.util.Log;
 
 public class Touch extends Widget {
 	private static final String TAG = "Touch";
 	
-	SVGRenderer on = null;
-	SVGRenderer off = null;
+	WImage on = new WImage();
+	WImage off = new WImage();
 	
 	boolean down = false;
+	int pid0 = -1; //pointer id when down
 	
 	public Touch(PdDroidPatchView app, String[] atomline) {
 		super(app);
 		
-		float x = Float.parseFloat(atomline[2]) / parent.patchwidth * screenwidth;
-		float y = Float.parseFloat(atomline[3]) / parent.patchheight * screenheight;
-		float w = Float.parseFloat(atomline[5]) / parent.patchwidth * screenwidth;
-		float h = Float.parseFloat(atomline[6]) / parent.patchheight * screenheight;
+		float x = Float.parseFloat(atomline[2]) ;
+		float y = Float.parseFloat(atomline[3]) ;
+		float w = Float.parseFloat(atomline[5]) ;
+		float h = Float.parseFloat(atomline[6]) ;
 		
 		// graphics setup
 		dRect = new RectF(Math.round(x), Math.round(y), Math.round(x + w), Math.round(y + h));
 		
-		sendname = atomline[7];
+		sendname = app.app.replaceDollarZero(atomline[7]);
 		
-		// try and load SVGs
-		on = getSVG(TAG, "on", label);
-		off = getSVG(TAG, "off", label);
+		// try and load images
+		on.load(TAG, "on", sendname);
+		off.load(TAG, "off", sendname);
 	}
 	
 	public void draw(Canvas canvas) {
@@ -45,7 +37,7 @@ public class Touch extends Widget {
 			paint.setStrokeWidth(1);
 		}
 		
-		if (down ? drawPicture(canvas, on) : drawPicture(canvas, off)) {
+		if (down ? on.draw(canvas) : off.draw(canvas)) {
 			canvas.drawLine(dRect.left + 1, dRect.top, dRect.right - 1, dRect.top, paint);
 			canvas.drawLine(dRect.left + 1, dRect.bottom, dRect.right - 1, dRect.bottom, paint);
 			canvas.drawLine(dRect.left, dRect.top + 1, dRect.left, dRect.bottom - 1, paint);
@@ -53,17 +45,42 @@ public class Touch extends Widget {
 		}
 	}
 	
-	public void touch(MotionEvent event) {
-		float ex = event.getX();
-		float ey = event.getY();
-		if ((event.getAction() == event.ACTION_DOWN || event.getAction() == event.ACTION_MOVE) && dRect.contains(ex, ey)) {
-			send(((ex - dRect.left) / dRect.width()) + " " + ((ey - dRect.top) / dRect.height()));
+	public void Sendxy(float x, float y)
+	{
+		send(((x - dRect.left) / dRect.width()) + " "
+				+ ((y - dRect.top) / dRect.height()));
+	}
+	
+	public boolean touchdown(int pid, float x, float y)
+	{
+		if (dRect.contains(x, y)) {
+
 			down = true;
+			pid0 = pid;
+			Sendxy(x,y);
+			return true;
 		}
 		
-		if (event.getAction() == event.ACTION_UP && down) {
-			send(0 + " " + 0);
-			down = false;
-		}
+		return false;
 	}
+	
+	public boolean touchup(int pid, float x, float y)
+	{
+		if(pid == pid0) {
+			down = false;
+			pid0 = -1;
+			send("-1 -1");
+		}
+		return false;
+	}
+	
+	public boolean touchmove(int pid, float x, float y)
+	{
+		if(pid == pid0) {
+			Sendxy(x,y);		
+			return true;
+		}
+		return false;	
+	}
+
 }
