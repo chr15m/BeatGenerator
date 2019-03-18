@@ -1,11 +1,9 @@
-#N struct 1254template-marker float a float b;
+#N struct 1255template-marker float a float b;
 #N canvas 565 69 480 320 10;
-#X declare -path .;
-#X declare -path rj;
 #X obj 378 324 _main;
 #X obj 60 324 menubang load;
 #X obj 4 324 menubang save;
-#X obj 155 300 cnv 8 24 16 empty ticker empty 20 12 0 14 -258113 -66577
+#X obj 68 300 cnv 8 24 16 empty ticker empty 20 12 0 14 -258113 -66577
 0;
 #N canvas 21 17 450 661 interface 0;
 #X obj 229 100 s shake;
@@ -210,7 +208,7 @@
 #X obj 41 78 vsl 24 80 0 1 0 1 drums_pan drums_pan_r empty 0 -9 0 10
 -262144 -1 -1 3550 1;
 #X obj 41 172 tgl 24 1 volume_drums volume_drums_r empty 17 7 0 10
--262144 -1 -1 1 1;
+-262144 -1 -1 0 1;
 #X obj 10 172 tgl 24 1 volume_synth volume_synth_r empty 17 7 0 10
 -262144 -1 -1 1 1;
 #X obj 148 76 taplist 64 28 note-1-set note-1 C C# D D# E F F# G G#
