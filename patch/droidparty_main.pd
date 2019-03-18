@@ -3,7 +3,7 @@
 #X obj 378 324 _main;
 #X obj 60 324 menubang load;
 #X obj 4 324 menubang save;
-#X obj 68 300 cnv 8 24 16 empty ticker empty 20 12 0 14 -258113 -66577
+#X obj 184 300 cnv 8 24 16 empty ticker empty 20 12 0 14 -258113 -66577
 0;
 #N canvas 21 17 450 661 interface 0;
 #X obj 229 100 s shake;
@@ -113,7 +113,7 @@
 #X obj 213 208 tgl 24 1 tgl_bd-edit_7 tgl_r_bd-edit_7 empty 17 7 0
 10 -262144 -1 -1 0 1;
 #X obj 242 208 tgl 24 1 tgl_bd-edit_8 tgl_r_bd-edit_8 empty 17 7 0
-10 -262144 -1 -1 0 1;
+10 -262144 -1 -1 1 1;
 #X obj 271 208 tgl 24 1 tgl_bd-edit_9 tgl_r_bd-edit_9 empty 17 7 0
 10 -262144 -1 -1 0 1;
 #X obj 300 208 tgl 24 1 tgl_bd-edit_10 tgl_r_bd-edit_10 empty 17 7
@@ -121,13 +121,13 @@
 #X obj 329 208 tgl 24 1 tgl_bd-edit_11 tgl_r_bd-edit_11 empty 17 7
 0 10 -262144 -1 -1 0 1;
 #X obj 358 208 tgl 24 1 tgl_bd-edit_12 tgl_r_bd-edit_12 empty 17 7
-0 10 -262144 -1 -1 0 1;
+0 10 -262144 -1 -1 1 1;
 #X obj 387 208 tgl 24 1 tgl_bd-edit_13 tgl_r_bd-edit_13 empty 17 7
 0 10 -262144 -1 -1 0 1;
 #X obj 416 208 tgl 24 1 tgl_bd-edit_14 tgl_r_bd-edit_14 empty 17 7
 0 10 -262144 -1 -1 0 1;
 #X obj 445 208 tgl 24 1 tgl_bd-edit_15 tgl_r_bd-edit_15 empty 17 7
-0 10 -262144 -1 -1 0 1;
+0 10 -262144 -1 -1 1 1;
 #X obj 10 239 tgl 24 1 tgl_sd-edit_0 tgl_r_sd-edit_0 empty 17 7 0 10
 -262144 -1 -1 0 1;
 #X obj 39 239 tgl 24 1 tgl_sd-edit_1 tgl_r_sd-edit_1 empty 17 7 0 10
@@ -163,11 +163,11 @@
 #X obj 10 270 tgl 24 1 tgl_hh-edit_0 tgl_r_hh-edit_0 empty 17 7 0 10
 -262144 -1 -1 1 1;
 #X obj 39 270 tgl 24 1 tgl_hh-edit_1 tgl_r_hh-edit_1 empty 17 7 0 10
--262144 -1 -1 0 1;
+-262144 -1 -1 1 1;
 #X obj 68 270 tgl 24 1 tgl_hh-edit_2 tgl_r_hh-edit_2 empty 17 7 0 10
 -262144 -1 -1 1 1;
 #X obj 97 270 tgl 24 1 tgl_hh-edit_3 tgl_r_hh-edit_3 empty 17 7 0 10
--262144 -1 -1 0 1;
+-262144 -1 -1 1 1;
 #X obj 126 270 tgl 24 1 tgl_hh-edit_4 tgl_r_hh-edit_4 empty 17 7 0
 10 -262144 -1 -1 1 1;
 #X obj 155 270 tgl 24 1 tgl_hh-edit_5 tgl_r_hh-edit_5 empty 17 7 0
@@ -208,7 +208,7 @@
 #X obj 41 78 vsl 24 80 0 1 0 1 drums_pan drums_pan_r empty 0 -9 0 10
 -262144 -1 -1 3550 1;
 #X obj 41 172 tgl 24 1 volume_drums volume_drums_r empty 17 7 0 10
--262144 -1 -1 0 1;
+-262144 -1 -1 1 1;
 #X obj 10 172 tgl 24 1 volume_synth volume_synth_r empty 17 7 0 10
 -262144 -1 -1 1 1;
 #X obj 148 76 taplist 64 28 note-1-set note-1 C C# D D# E F F# G G#
