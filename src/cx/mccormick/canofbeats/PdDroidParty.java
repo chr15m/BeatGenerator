@@ -30,7 +30,7 @@ import android.content.res.Resources;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.net.wifi.WifiManager;
-import android.net.wifi.WifiManager.MulticastLock;
+//import android.net.wifi.WifiManager.MulticastLock;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.text.Html;
@@ -75,7 +75,7 @@ public class PdDroidParty extends Activity {
 	Map<String, DroidPartyReceiver> receivemap = new HashMap<String, DroidPartyReceiver>();
 	ArrayList<String[]> atomlines = null;
 	Widget widgetpopped = null;
-	MulticastLock wifiMulticastLock = null;
+	//MulticastLock wifiMulticastLock = null;
 	
 	private MenuItem menuabout = null;
 	private MenuItem menuexit = null;
@@ -303,10 +303,10 @@ public class PdDroidParty extends Activity {
 	private void initPd() {
 		Context context = this.getApplicationContext();
 		// make sure netreceive can receive broadcast UDP packets
-		wifiMulticastLock = ((WifiManager) context.getSystemService(Context.WIFI_SERVICE)).createMulticastLock("PdDroidPartyMulticastLock");
+		/*wifiMulticastLock = ((WifiManager) context.getSystemService(Context.WIFI_SERVICE)).createMulticastLock("PdDroidPartyMulticastLock");
 		Log.e(TAG, "Got Multicast Lock (before)? " + wifiMulticastLock.isHeld());
 		wifiMulticastLock.acquire();
-		Log.e(TAG, "Got Multicast Lock (after)? " + wifiMulticastLock.isHeld());
+		Log.e(TAG, "Got Multicast Lock (after)? " + wifiMulticastLock.isHeld());*/
 		// set up the midi stuff
 		UsbMidiDevice.installBroadcastHandler(this, new UsbBroadcastHandler() {
 			@Override
@@ -520,8 +520,8 @@ public class PdDroidParty extends Activity {
 		}
 		UsbMidiDevice.uninstallBroadcastHandler(this);
 		// release the lock on wifi multicasting
-		if (wifiMulticastLock != null && wifiMulticastLock.isHeld())
-			wifiMulticastLock.release();
+		/*if (wifiMulticastLock != null && wifiMulticastLock.isHeld())
+			wifiMulticastLock.release();*/
 	}
 	
 	public void launchDialog(Widget which, int type) {
