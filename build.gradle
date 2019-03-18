@@ -23,7 +23,7 @@ android {
 
     defaultConfig {
         applicationId "cx.mccormick.canofbeats"
-        minSdkVersion 17
+        minSdkVersion 16
         targetSdkVersion 26
     }
 
