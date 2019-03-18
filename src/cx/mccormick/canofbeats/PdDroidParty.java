@@ -165,13 +165,13 @@ public class PdDroidParty extends Activity {
 		// TODO: preferences = ic_menu_preferences
 		// midi menu
 		// test for platforms that don't support USB OTG devices
-		try {
+		/*try {
 			UsbManager manager = (UsbManager) getSystemService(Context.USB_SERVICE);
 			menumidi = menu.add(0, Menu.FIRST + menu.size(), 0, "Midi");
 			menumidi.setIcon(android.R.drawable.ic_menu_manage); 
 		} catch(NoClassDefFoundError e) {
 			// don't care
-		}
+		}*/
 		// exit menu item
 		menuexit = menu.add(0, Menu.FIRST + menu.size(), 0, "Exit");
 		menuexit.setIcon(android.R.drawable.ic_menu_close_clear_cancel); 
