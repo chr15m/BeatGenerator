@@ -1,4 +1,5 @@
 res/raw/patch.zip
+res/values/patch.xml
 .gradle
 build
 patch/VERSION-*
