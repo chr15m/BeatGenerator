@@ -418,7 +418,8 @@ public class PdDroidParty extends Activity {
 				sRate = Math.min(sRate, SAMPLE_RATE);
 				Log.e(TAG, "actual sample rate: " + sRate);
 				
-				int nIn = Math.min(AudioParameters.suggestInputChannels(), 1);
+				int nIn = 0; //Math.min(AudioParameters.suggestInputChannels(), 1);
+
 				Log.e(TAG, "input channels: " + nIn);
 				if (nIn == 0) {
 					Log.e(TAG, "warning: audio input not available");

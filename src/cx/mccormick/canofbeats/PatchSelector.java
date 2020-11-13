@@ -108,12 +108,14 @@ public class PatchSelector extends Activity implements OnItemClickListener {
 					 process();
 				 }
 			 }
+		} else {
+			Log.d("PatchSelector", "onStart = No intent");
 		}
 		return;
 	}
 	@Override
 	protected Dialog onCreateDialog(int id) {
-		 httpProgress = new ProgressDialog(this);
+		httpProgress = new ProgressDialog(this);
 	        httpProgress.setMessage("Downloading file. Please wait...");
 	        httpProgress.setIndeterminate(false);
 	        httpProgress.setMax(100);
@@ -312,23 +314,50 @@ public class PatchSelector extends Activity implements OnItemClickListener {
 	}
 	
 	private boolean testForBakedPatch() {
-		return res.getIdentifier("patch", "raw", getPackageName()) != 0;
+		Log.d("PatchSelector", "testForBakedPatch");
+		Log.d("PatchSelector", "testForBakedPatch (raw) = " + R.raw.patch);
+		// return res.getIdentifier("patch", "raw", getPackageName()) != 0;
+		return R.raw.patch != 0;
 	}
 	
 	private String unpackBakedPatch() {
+		Log.e("PatchSelector", "unpackBakedPatch");
 		// if we have a patch zip
 		if (testForBakedPatch()) {
+			Log.d("PatchSelector", "Baked patch found");
 			//IoUtils.extractZipResource(res.openRawResource(R.raw.abstractions), libDir, false);
 			//IoUtils.extractZipResource(res.openRawResource(Properties.hasArmeabiV7a ? R.raw.externals_v7a : R.raw.externals), libDir, false);
 			// where we will be storing the patch on the sdcard
-			String basedir = Environment.getExternalStorageDirectory().toString() + "/" + res.getString(res.getIdentifier("dirname", "string", getPackageName()));
+			//String basedir = Environment.getExternalStorageDirectory().toString() + "/" + res.getString(res.getIdentifier("dirname", "string", getPackageName()));
+
+			String basedir = getFilesDir().getAbsolutePath();
+			// File basedir = new File(dir, "chords.pd");
+			//IoUtils.extractZipResource(getResources().openRawResource(R.raw.patch), dir, true);
+			//PdBase.openPatch(patchFile.getAbsolutePath());
+
+			Log.d("PatchSelector", "Basedir: " + basedir);
+			//File dest_dir = new File(Environment.getExternalStorageDirectory() + "/" + folder_main, "product1");
+			//if (!f1.exists()) {
+			//    f1.mkdirs();
+			//}
+			/*File d = new File(basedir);
+			if (!d.isDirectory()) {
+				Log.d("PatchSelector", "mkdirs");
+				if (!d.mkdirs()) {
+					Log.d("PatchSelector", "mkdirs failed!");
+				}
+			}*/
 			// version file for the existing patch
 			File version = new File(basedir + "/patch/VERSION-" + res.getInteger(res.getIdentifier("revno", "integer", getPackageName())));
 			// if the version file does not exist
 			if (!version.exists()) {
 				try {
-					IoUtils.extractZipResource(getResources().openRawResource(res.getIdentifier("patch", "raw", getPackageName())), new File(basedir), false);
+					Log.d("PatchSelector", "Attempting unzip");
+					IoUtils.extractZipResource(getResources().openRawResource(R.raw.patch), new File(basedir), false);
+					//IoUtils.extractZipResource(getResources().openRawResource(R.raw.patch), new File(Environment.getExternalStorageDirectory().toString()), false);
+					// IoUtils.extractZipResource(getResources().openRawResource(res.getIdentifier("patch", "raw", getPackageName())), new File(basedir), false);
 				} catch (IOException e) {
+					Log.e("PatchSelector", e.toString());
 					// do nothing
 					return null;
 				}
@@ -341,7 +370,11 @@ public class PatchSelector extends Activity implements OnItemClickListener {
 			(new File(basedir, "savefiles")).mkdirs();
 			// return the patch path to launch Pd
 			return basedir + "/patch/droidparty_main.pd";
+		} else {
+			Log.d("PatchSelector", "Baked patch NOT found");
 		}
+		
+		Log.d("PatchSelector", "AFTER");
 		
 		// add abstractions and externals zips
 		Resources res = getResources();
@@ -358,9 +391,14 @@ public class PatchSelector extends Activity implements OnItemClickListener {
 	}
 	
 	private void initPd(final ProgressDialog progress) {
-		new Thread() {
+		String bakedpatch = unpackBakedPatch();
+		launchDroidParty(bakedpatch);
+		finish();
+
+		/*new Thread() {
 			@Override
 			public void run() {
+				Log.d("PatchSelector", "initPd run()");
 				long start = System.currentTimeMillis();
 				// see if this is an app with a zip to unpack instead
 				String bakedpatch = unpackBakedPatch();
@@ -371,6 +409,7 @@ public class PatchSelector extends Activity implements OnItemClickListener {
 					} catch (Exception e) {
 					}
 				}
+				Log.d("PatchSelector", "bakedpatch: " + bakedpatch);
 				if (bakedpatch != null) {
 					launchDroidParty(bakedpatch);
 					finish();
@@ -406,7 +445,7 @@ public class PatchSelector extends Activity implements OnItemClickListener {
 					});
 				}
 			};
-		}.start();		
+		}.start();*/	
 	}
 	
 	private void doSplash() {
