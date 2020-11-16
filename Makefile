@@ -4,4 +4,5 @@ install:
 
 release:
 	./pack-patch
-	./gradlew release
+	./gradlew build
+	cp ./build/outputs/apk/release/CanOfBeats-release.apk .
