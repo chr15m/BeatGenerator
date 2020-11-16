@@ -229,15 +229,12 @@ public class PdDroidParty extends Activity {
 	// confirm quit :
 	@Override
 	public void onBackPressed() {
-	    String basename;
-	    
-	    basename = path.substring(0,path.lastIndexOf("/"));
-	    basename = basename.substring(basename.lastIndexOf("/")+1,basename.length());
+	    String basename = "CanOfBeats";
 	    
 		new AlertDialog.Builder(this)
 	        .setIcon(android.R.drawable.ic_dialog_alert)
-	        .setTitle("Confirm Close")
-	        .setMessage("Are you sure you want to close " + basename + " ?")
+	        .setTitle("Quit?")
+	        .setMessage("Are you sure you want to quit " + basename + " ?")
 	        .setPositiveButton("Yes", new DialogInterface.OnClickListener()
 	    {
 	        @Override
