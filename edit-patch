@@ -1,0 +1,3 @@
+#!/bin/sh
+
+pd -path ../PdDroidParty/droidparty-abstractions patch/droidparty_main.pd
