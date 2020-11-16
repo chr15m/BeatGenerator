@@ -4,3 +4,4 @@ res/values/patch.xml
 build
 patch/VERSION-*
 .*.swp
+.envrc

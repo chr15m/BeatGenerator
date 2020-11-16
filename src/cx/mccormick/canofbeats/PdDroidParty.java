@@ -318,71 +318,7 @@ public class PdDroidParty extends Activity {
 					post("USB connection failed");
 					midiDevice = null;
 					return;
-				}
-				
-				/*if (midiDevice.getInterfaces().size() == 1 && midiDevice.getInterfaces().get(0).getOutputs().size() == 1) {
-					try {
-						sender = new PdToMidiAdapter(midiDevice.getInterfaces().get(0).getOutputs().get(0).getMidiOut());
-						PdBase.setMidiReceiver(sender);
-					} catch (DeviceNotConnectedException e) {
-						post("MIDI device has been disconnected");
-					} catch (InterfaceNotAvailableException e) {
-						post("MIDI interface is unavailable");
-					}
-				} else {*/
-					outputSelector = new UsbMidiOutputSelector(midiDevice) {
-						@Override
-						protected void onOutputSelected(UsbMidiOutput output, UsbMidiDevice device, int iface, int index) {
-							post("Output selection: Interface " + iface + ", Output " + index);
-							try {
-								sender = new PdToMidiAdapter(output.getMidiOut());
-								PdBase.setMidiReceiver(sender);
-							} catch (DeviceNotConnectedException e) {
-								post("MIDI device has been disconnected");
-							} catch (InterfaceNotAvailableException e) {
-								post("MIDI interface is unavailable");
-							}
-						}
-
-						@Override
-						protected void onNoSelection(UsbMidiDevice device) {
-							post("No output selected");
-						}
-					};
-				//}
-
-				/*if (midiDevice.getInterfaces().size() == 1 && midiDevice.getInterfaces().get(0).getInputs().size() == 1) {
-					midiDevice.getInterfaces().get(0).getInputs().get(0).setReceiver(receiver);
-				} else {*/
-					new UsbMidiInputSelector(midiDevice) {
-						@Override
-						protected void onInputSelected(UsbMidiInput input, UsbMidiDevice device, int iface,
-								int index) {
-							post("Input selection: Interface " + iface + ", Input " + index);
-							input.setReceiver(receiver);
-							try {
-								input.start();
-							} catch (DeviceNotConnectedException e) {
-								post("MIDI device has been disconnected");
-								return;
-							} catch (InterfaceNotAvailableException e) {
-								post("MIDI interface is unavailable");
-								return;
-							}
-							if (outputSelector != null) {
-								outputSelector.show(getFragmentManager(), null);
-							}
-						}
-
-						@Override
-						protected void onNoSelection(UsbMidiDevice device) {
-							post("No input selected");
-							if (outputSelector != null) {
-								outputSelector.show(getFragmentManager(), null);
-							}
-						}
-					}.show(getFragmentManager(), null);
-				//}
+				}				
 			}
 
 			@Override

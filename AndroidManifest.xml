@@ -33,6 +33,6 @@
 	<uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
 	<!-- <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
 	<uses-permission android:name="android.permission.CHANGE_NETWORK_MULTICAST_STATE" /> -->
-	<uses-permission android:name="android.permission.VIBRATE" />
-	<uses-permission android:name="android.permission.BIND_MIDI_DEVICE_SERVICE" />
+	<!-- <uses-permission android:name="android.permission.VIBRATE" /> -->
+	<!-- <uses-permission android:name="android.permission.BIND_MIDI_DEVICE_SERVICE" /> -->
 </manifest>
