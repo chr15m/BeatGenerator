@@ -229,7 +229,7 @@ public class PdDroidParty extends Activity {
 	// confirm quit :
 	@Override
 	public void onBackPressed() {
-	    String basename = "CanOfBeats";
+	    String basename = "Beat Generator";
 	    
 		new AlertDialog.Builder(this)
 	        .setIcon(android.R.drawable.ic_dialog_alert)

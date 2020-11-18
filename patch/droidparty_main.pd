@@ -1,11 +1,11 @@
 #N struct 1255template-marker float a float b;
-#N canvas 561 69 480 320 10;
+#N canvas 559 69 480 320 10;
 #X declare -path .;
 #X declare -path rj;
 #X obj 378 324 _main;
 #X obj 60 324 menubang load;
 #X obj 4 324 menubang save;
-#X obj 39 300 cnv 8 24 16 empty ticker empty 20 12 0 14 -258113 -66577
+#X obj 416 300 cnv 8 24 16 empty ticker empty 20 12 0 14 -258113 -66577
 0;
 #N canvas 17 53 450 661 interface 0;
 #X obj 229 100 s shake;
@@ -225,3 +225,4 @@ A A# B;
 #X obj 74 168 taplist 64 28 set-synth choose-synth saw sqr plck;
 #X obj 10 10 wordbutton 140 32 randomize;
 #X obj 370 44 wordbutton 96 32 clear;
+#X obj 269 10 taplist 64 32 set-sync sync off 1 2 1/2;
