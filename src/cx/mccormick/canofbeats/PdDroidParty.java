@@ -462,6 +462,7 @@ public class PdDroidParty extends Activity {
 		widgetpopped = which;
 		if (type == DIALOG_NUMBERBOX) {
 			Intent it = new Intent(this, NumberboxDialog.class);
+			it.putExtra("title", which.getLabel());
 			it.putExtra("number", which.getval());
 			startActivityForResult(it, DIALOG_NUMBERBOX);
 		} else if (type == DIALOG_SAVE) {

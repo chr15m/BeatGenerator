@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 public class NumberboxDialog extends Activity {
 	@Override
@@ -14,9 +15,13 @@ public class NumberboxDialog extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.numberbox_dialog);
 		
+		Intent intent = getIntent();
+		final TextView title = (TextView)findViewById(R.id.title);
+		title.setText(intent.getStringExtra("title"));
+		this.setTitle(intent.getStringExtra("title"));
+
 		//Context context = getApplicationContext();
 		final EditText number = (EditText)findViewById(R.id.number);
-		Intent intent = getIntent();
 		number.setText("" + intent.getFloatExtra("number", 0));
 		
 		Button ok = (Button)findViewById(R.id.ok);

@@ -188,6 +188,10 @@ public class Widget {
 	public float getval() {
 		return val;
 	}
+
+	public String getLabel() {
+		return label;
+	}
 	
 	public void drawLabel(Canvas canvas) {
 		if (label != null) {
