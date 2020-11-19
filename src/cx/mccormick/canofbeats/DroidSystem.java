@@ -63,7 +63,9 @@ public class DroidSystem extends Widget implements SensorEventListener{
 		else if(symbol.equals("vibr")) {
 			vibrator.vibrate(((Float)args[0]).longValue());
 		}
-				
+		else if (symbol.equals("check-volume")) {
+			parent.app.volumeCheck();
+		}
 	}
 	
 	public void onAccuracyChanged(Sensor sensor,int accuracy){	

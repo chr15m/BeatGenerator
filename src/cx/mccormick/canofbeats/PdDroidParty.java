@@ -44,6 +44,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.media.AudioManager;
 
 import com.noisepages.nettoyeur.midi.MidiReceiver;
 import com.noisepages.nettoyeur.usb.ConnectionFailedException;
@@ -94,7 +95,7 @@ public class PdDroidParty extends Activity {
 	};
 	
 	// post a 'toast' alert to the Android UI
-	private void post(final String msg) {
+	public void post(final String msg) {
 		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
@@ -281,6 +282,22 @@ public class PdDroidParty extends Activity {
 			r.addWidget(w);
 		}
 	}
+
+	public void volumeCheck() {
+		AudioManager audio = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+		int currentVolume = audio.getStreamVolume(AudioManager.STREAM_MUSIC);
+		int maxVolume = audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+
+		if (currentVolume < maxVolume) {
+			new AlertDialog.Builder(this)
+			.setIcon(android.R.drawable.ic_dialog_alert)
+			.setTitle("Sync mode volume")
+			.setMessage("To get sync working, make sure the volume on your device is turned all the way to full.")
+			.setPositiveButton("Ok", null)
+			// .setNegativeButton("No", null)
+			.show();
+		}
+	}
 	
 	// initialise the GUI with the OpenGL rendering engine
 	private void initGui() {
@@ -397,6 +414,14 @@ public class PdDroidParty extends Activity {
 					patchview.loaded();
 					// dismiss the progress meter
 					progress.dismiss();
+					// turn up volume
+
+					AudioManager audio = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+					int currentVolume = audio.getStreamVolume(AudioManager.STREAM_MUSIC);
+					int maxVolume = audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+					//float percent = 0.7f;
+					//int seventyVolume = (int) (maxVolume*percent);
+					audio.setStreamVolume(AudioManager.STREAM_MUSIC, maxVolume, 0);
 				} catch (IOException e) {
 					post(e.toString() + "; exiting now");
 					finish();

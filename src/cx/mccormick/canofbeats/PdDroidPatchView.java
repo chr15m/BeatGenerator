@@ -16,10 +16,13 @@ import android.graphics.BitmapFactory;
 import android.graphics.RectF;
 import android.graphics.drawable.PictureDrawable;
 import android.view.MotionEvent;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.os.Build;
 import android.util.Log;
+
+import org.puredata.core.PdBase;
 
 import com.larvalabs.svgandroid.SVGParser;
 
@@ -189,6 +192,23 @@ public class PdDroidPatchView extends View implements OnTouchListener {
 		}
 		invalidate();
 		return true;
+	}
+
+	/* catch volume buttons and pass to patch */
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+	switch (keyCode) {
+		case KeyEvent.KEYCODE_VOLUME_UP:
+			PdBase.sendMessage("volume-change", "up", "bang");
+			return true;
+		case KeyEvent.KEYCODE_VOLUME_DOWN:
+			PdBase.sendMessage("volume-change", "down", "bang");
+			return true;
+		default:
+			// return false;
+			// Update based on @Rene comment below:
+			return super.onKeyDown(keyCode, event);
+		}
 	}
 	
 	/** Lets us invalidate this view from the audio thread */
