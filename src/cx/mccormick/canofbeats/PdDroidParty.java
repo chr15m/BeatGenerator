@@ -351,11 +351,11 @@ public class PdDroidParty extends Activity {
 			}
 		});
 		// set a progress dialog running
-		final ProgressDialog progress = new ProgressDialog(this);
+		/*final ProgressDialog progress = new ProgressDialog(this);
 		progress.setMessage("Loading...");
 		progress.setCancelable(false);
 		progress.setIndeterminate(true);
-		progress.show();
+		progress.show();*/
 		new Thread() {
 			@Override
 			public void run() {
@@ -413,7 +413,7 @@ public class PdDroidParty extends Activity {
 					// tell the patch view everything has been loaded
 					patchview.loaded();
 					// dismiss the progress meter
-					progress.dismiss();
+					//progress.dismiss();
 					// turn up volume
 
 					AudioManager audio = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
