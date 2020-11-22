@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="cx.mccormick.canofbeats" android:versionCode="188" android:versionName="0.6.0" xmlns:tools="http://schemas.android.com/tools">
+	package="cx.mccormick.canofbeats" android:versionCode="189" android:versionName="0.7.0" xmlns:tools="http://schemas.android.com/tools">
         <supports-screens
             android:largeScreens="true"
             android:normalScreens="true"
@@ -24,6 +24,7 @@
 		<service android:name="org.puredata.android.service.PdService" />
 	</application>
 	<uses-sdk android:minSdkVersion="17" android:targetSdkVersion="11" tools:overrideLibrary="org.puredata.android.service"/>
+	<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 	<uses-permission android:name="android.permission.RECORD_AUDIO" />
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
