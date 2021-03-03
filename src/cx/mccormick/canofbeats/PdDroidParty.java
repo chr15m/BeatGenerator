@@ -227,27 +227,6 @@ public class PdDroidParty extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 	
-	// confirm quit :
-	@Override
-	public void onBackPressed() {
-	    String basename = "Beat Generator";
-	    
-		new AlertDialog.Builder(this)
-	        .setIcon(android.R.drawable.ic_dialog_alert)
-	        .setTitle("Quit?")
-	        .setMessage("Are you sure you want to quit " + basename + " ?")
-	        .setPositiveButton("Yes", new DialogInterface.OnClickListener()
-	    {
-	        @Override
-	        public void onClick(DialogInterface dialog, int which) {
-	            finish();    
-	        }
-
-	    })
-	    .setNegativeButton("No", null)
-	    .show();
-	}
-	
 	// send a Pd atom-string 's' to a particular receiver 'dest'
 	public void send(String dest, String s) {
 		List<Object> list = new ArrayList<Object>();
